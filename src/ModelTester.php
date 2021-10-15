@@ -26,16 +26,20 @@ class ModelTester extends TestCase
 
     public function getModel(): ?string
     {
-        throw_if(is_null($this->tested) || !$this->isModelClass($this->tested),
-            new \Exception('You have to use a Eloquent Model'));
+        throw_if(
+            is_null($this->tested) || !$this->isModelClass($this->tested),
+            new \Exception('You have to use a Eloquent Model')
+        );
 
         return $this->tested;
     }
 
     public function getTable(): string
     {
-        throw_if(!$this->isExistingTable($this->table),
-            new \Exception('You have to use an existing table'));
+        throw_if(
+            !$this->isExistingTable($this->table),
+            new \Exception('You have to use an existing table')
+        );
 
         return $this->getModelTable();
     }
@@ -74,14 +78,21 @@ class ModelTester extends TestCase
         return $this->assertHasColumns(['created_at', 'updated_at']);
     }
 
+    public function assertHasSoftDeleteTimestampColumns()
+    {
+        return $this->assertHasColumns('deleted_at');
+    }
+
     public function assertHasColumns(array|string ...$columns): self
     {
         $columns = $this->getArrayParameters(...$columns);
         collect($columns)->each(function ($column) {
-            $this->assertTrue(in_array($column, Schema::getColumnListing($this->getTable())),
+            $this->assertTrue(
+                in_array($column, Schema::getColumnListing($this->getTable())),
                 sprintf(
                     'Column %s isn\'t a column of table %s.',
-                    $column, $this->getTable()
+                    $column,
+                    $this->getTable()
                 )
             );
         });
@@ -100,7 +111,9 @@ class ModelTester extends TestCase
                 $notFillable->push($column);
             }
         }
-        $this->assertEquals([], $notFillable->toArray(),
+        $this->assertEquals(
+            [],
+            $notFillable->toArray(),
             sprintf(
                 'Column %s isn\'t mass fillable.',
                 $notFillable->implode(", ")
@@ -127,10 +140,9 @@ class ModelTester extends TestCase
         } catch (\Exception $e) {
             $this->assertThat("Has Has Many Relation", self::isTrue(), sprintf(
                 'There is a problem with the HasManyRelation %s : %s',
-                $relation, $e->getMessage()
+                $relation,
+                $e->getMessage()
             ));
-
-
         }
         return $this;
     }
@@ -146,8 +158,6 @@ class ModelTester extends TestCase
         $relatedInstance2 = $related::factory()->create();
         $modelInstance2 = $this->getModel()::factory()->make();
         try {
-
-
             $modelInstance2->{$relation}()->associate($relatedInstance2)->save();
 
             $this->assertEquals($modelInstance->{$relation}->id, $relatedInstance->id);
@@ -157,10 +167,9 @@ class ModelTester extends TestCase
         } catch (\Exception $e) {
             $this->assertThat("Has Belongs To Relation", self::isTrue(), sprintf(
                 'There is a problem with the BelongsToRelation %s : %s',
-                $relation, $e->getMessage()
+                $relation,
+                $e->getMessage()
             ));
-
-
         }
         return $this;
     }
@@ -172,9 +181,7 @@ class ModelTester extends TestCase
         $modelInstance = $this->getModel()::factory()->create();
         $relatedInstance = $related::factory()->create();
         try {
-
-
-            $modelInstance->{$relation}()->attach($relatedInstance,$pivot_value ?? []);
+            $modelInstance->{$relation}()->attach($relatedInstance, $pivot_value ?? []);
 
             $this->assertTrue($modelInstance->{$relation}->contains($relatedInstance));
             $this->assertEquals($relatedInstance->id, $modelInstance->{$relation}->first()->id);
@@ -183,9 +190,9 @@ class ModelTester extends TestCase
         } catch (\Exception $e) {
             $this->assertThat("Has Many To Many Relation", self::isTrue(), sprintf(
                 'There is a problem with the ManyToManyRelation %s : %s',
-                $relation, $e->getMessage()
+                $relation,
+                $e->getMessage()
             ));
-
         }
         return $this;
     }
@@ -196,7 +203,6 @@ class ModelTester extends TestCase
 
         $instance = $this->getModel()::factory()->create();
         try {
-
             $instance->{$relation}()->save($related::factory()->make());
             $instance->refresh();
 
@@ -204,9 +210,9 @@ class ModelTester extends TestCase
         } catch (\Exception $e) {
             $this->assertThat("Has Has Many Morph Relation", self::isTrue(), sprintf(
                 'There is a problem with the HasManyMorph %s : %s',
-                $relation, $e->getMessage()
+                $relation,
+                $e->getMessage()
             ));
-
         }
         return $this;
     }
